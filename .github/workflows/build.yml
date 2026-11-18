@@ -1,3 +1,17 @@
+      - name: Debug Git
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          echo "=== git version ==="
+          git --version
+          echo "=== git status ==="
+          git status
+          echo "=== git tags ==="
+          git tag --list | tail -20
+          echo "=== git describe ==="
+          git describe --tags --always --dirty || true
+          echo "=== git rev-parse ==="
+          git rev-parse --is-inside-work-tree || true
+          git rev-parse HEAD || true
 name: Build CustomNameplates
 
 on:
