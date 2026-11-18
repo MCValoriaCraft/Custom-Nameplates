@@ -1,0 +1,56 @@
+name: Build CustomNameplates
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Debug Git
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          echo "=== git version ==="
+          git --version
+          echo "=== git status ==="
+          git status
+          echo "=== git tags ==="
+          git tag --list | tail -20
+          echo "=== git describe ==="
+          git describe --tags --always --dirty || true
+          echo "=== git rev-parse ==="
+          git rev-parse --is-inside-work-tree || true
+          git rev-parse HEAD || true
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: |
+          chmod +x gradlew
+          ./gradlew build --no-daemon --stacktrace
+
+      - name: List built files
+        if: always()
+        run: |
+          echo "Fichiers JAR trouvés :"
+          find . -type f -name "*.jar" -print
+
+      - name: Upload JAR
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: CustomNameplates-JAR
+          path: |
+            **/*.jar
+            !**/*-sources.jar
